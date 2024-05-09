@@ -17,7 +17,10 @@ def float_to_binary(num, char_size, mantissa_size):
     else:
         # Ненормалізоване представлення
         exponent_bits = '0' * char_size
-        mantissa_bits = format(int(mantissa * (1 << mantissa_size)), '0{}b'.format(mantissa_size))
+        mantissa_bits = format(int(num * (1 << mantissa_size)), '0{}b'.format(mantissa_size))
+        if exponent == -1:
+            exponent_bits = '0' * char_size
+            mantissa_bits = '0' * mantissa_size
 
     return sign, exponent_bits, mantissa_bits
 
@@ -29,10 +32,17 @@ def print_float_binary(sign, exponent_bits, mantissa_bits):
 
 # Функція для конвертації ЧПТ у десяткове число
 def binary_to_float(sign, exponent_bits, mantissa_bits):
-    sign = -1 if sign == '1' else 1
-    exponent = int(exponent_bits, 2) - ((1 << (len(exponent_bits) - 1)) - 1)
-    mantissa = 1 + sum([int(bit) * 2 ** -(i + 1) for i, bit in enumerate(mantissa_bits)])
-    return sign * mantissa * 2 ** exponent
+    sign_multiplier = -1 if sign == '1' else 1
+    # Перевірка на від'ємний експонент
+    if exponent_bits[0] == '1':
+        # Обчислення від'ємного значення експоненти
+        exponent = -int(exponent_bits[1:], 2) - 1
+    else:
+        # Позитивний експонент, просто конвертуємо в десяткове число
+        exponent = int(exponent_bits, 2)
+    mantissa = sign_multiplier * (1 + sum(int(bit) * 2 ** -(i + 1) for i, bit in enumerate(mantissa_bits)))
+    return mantissa * 2 ** exponent
+
 
 # Стандартні представлення ЧПТ
 standard_floats = [
@@ -46,6 +56,30 @@ standard_floats = [
     float('nan')            # NaN-значення
 ]
 
+# Введення ЧПТ користувачем
+user_input = input("Enter a floating point number in the format ±x.x...xE±x...x: ")
+
+# Розділення введеного значення на мантису та експоненту
+parts = user_input.split('E')
+
+# Перевірка чи введено правильне значення
+if len(parts) == 2:
+    mantissa_part = parts[0].replace('.', '')
+    exponent_part = parts[1].replace('+', '')
+    sign = '1' if user_input[0] == '-' else '0'
+    # Формування бітового представлення
+    exponent_bits = exponent_part.zfill(8)
+    mantissa_bits = ''.join(['1'] + [bit for bit in mantissa_part])[:16]
+
+    print("\nUser Input Binary Representation:")
+    print_float_binary(sign, exponent_bits, mantissa_bits)
+
+    # Конвертація ЧПТ у десяткове число та виведення результату
+    converted_num = binary_to_float(sign, exponent_bits, mantissa_bits)
+    print("\nConverted to Decimal:", converted_num)
+else:
+    print("Invalid input format. Please enter the number in the correct format.")
+
 # Виведення стандартних представлень ЧПТ
 print("Standard Float Representations:")
 for num in standard_floats:
@@ -53,21 +87,3 @@ for num in standard_floats:
     print("Decimal:", num)
     print("Binary: ", binary_representation)
     print("")
-
-# Введення ЧПТ користувачем
-user_input = input("Enter a floating point number in the format ±x.x...xE±x...x: ")
-# Розділення введеного значення на мантису та експоненту
-parts = user_input.split('E')
-mantissa_part = parts[0].replace('.', '')
-exponent_part = parts[1].replace('+', '')
-sign = '1' if user_input[0] == '-' else '0'
-# Формування бітового представлення
-exponent_bits = bin(int(exponent_part))[2:].zfill(8)
-mantissa_bits = ''.join(['1'] + [bit for bit in mantissa_part])[:16]
-
-print("\nUser Input Binary Representation:")
-print_float_binary(sign, exponent_bits, mantissa_bits)
-
-# Конвертація ЧПТ у десяткове число та виведення результату
-converted_num = binary_to_float(sign, exponent_bits, mantissa_bits)
-print("\nConverted to Decimal:", converted_num)
