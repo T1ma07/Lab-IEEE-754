@@ -30,18 +30,14 @@ def print_float_binary(sign, exponent_bits, mantissa_bits):
     print("Exponent:   ", exponent_bits)
     print("Mantissa:   ", mantissa_bits)
 
-# Функція для конвертації ЧПТ у десяткове число
-def binary_to_float(sign, exponent_bits, mantissa_bits):
-    sign_multiplier = -1 if sign == '1' else 1
-    # Перевірка на від'ємний експонент
-    if exponent_bits[0] == '1':
-        # Обчислення від'ємного значення експоненти
-        exponent = -int(exponent_bits[1:], 2) - 1
-    else:
-        # Позитивний експонент, просто конвертуємо в десяткове число
-        exponent = int(exponent_bits, 2)
-    mantissa = sign_multiplier * (1 + sum(int(bit) * 2 ** -(i + 1) for i, bit in enumerate(mantissa_bits)))
-    return mantissa * 2 ** exponent
+def binary_to_decimal(binary_str):
+    decimal = 0
+    for digit in binary_str:
+        # Якщо розряд від'ємний, ігноруємо його
+        if digit == '-':
+            continue
+        decimal = decimal * 2 + int(digit)
+    return decimal
 
 
 # Стандартні представлення ЧПТ
@@ -69,16 +65,26 @@ if len(parts) == 2:
     sign = '1' if user_input[0] == '-' else '0'
     # Формування бітового представлення
     exponent_bits = exponent_part.zfill(8)
-    mantissa_bits = ''.join(['1'] + [bit for bit in mantissa_part])[:16]
+    mantissa_bits = ''.join(['1' if bit == '-' else bit for bit in mantissa_part])[:16]
 
     print("\nUser Input Binary Representation:")
     print_float_binary(sign, exponent_bits, mantissa_bits)
 
-    # Конвертація ЧПТ у десяткове число та виведення результату
-    converted_num = binary_to_float(sign, exponent_bits, mantissa_bits)
+    # Конвертація ЧПТ у десяткове число та виведення результату без використання binary_to_float
+    sign_multiplier = -1 if sign == '1' else 1
+    # Перевірка на від'ємний експонент
+    if exponent_bits[0] == '1':
+        # Обчислення від'ємного значення експоненти
+        exponent = -binary_to_decimal(exponent_bits[1:])
+    else:
+        # Позитивний експонент, просто конвертуємо в десяткове число
+        exponent = binary_to_decimal(exponent_bits)
+    mantissa = sign_multiplier * (1 + sum(int(bit) * 2 ** -(i + 1) for i, bit in enumerate(mantissa_bits)))
+    converted_num = mantissa * 2 ** exponent
     print("\nConverted to Decimal:", converted_num)
 else:
     print("Invalid input format. Please enter the number in the correct format.")
+
 
 # Виведення стандартних представлень ЧПТ
 print("Standard Float Representations:")
