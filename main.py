@@ -70,7 +70,6 @@ if len(parts) == 2:
     print("\nUser Input Binary Representation:")
     print_float_binary(sign, exponent_bits, mantissa_bits)
 
-    # Конвертація ЧПТ у десяткове число та виведення результату без використання binary_to_float
     sign_multiplier = -1 if sign == '1' else 1
     # Перевірка на від'ємний експонент
     if exponent_bits[0] == '1':
